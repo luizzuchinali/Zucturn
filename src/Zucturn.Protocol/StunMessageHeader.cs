@@ -13,7 +13,7 @@ public enum StunClass
 
 public enum StunMethod
 {
-    Binding = 0b000000000001,
+    Binding = 0b000000000001
 }
 
 public struct StunMessageHeader

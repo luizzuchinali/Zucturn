@@ -1,1 +1,1 @@
-﻿# Zucturn TURN server C# project
+﻿# Zucturn STUN/TURN C# project
