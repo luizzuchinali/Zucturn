@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionFolder", "{C8ECA33F-5037-4229-9E7A-04962EFA2726}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zucturn.Client.App", "src\Zucturn.Client.App\Zucturn.Client.App.csproj", "{F154706C-92C8-49BE-9223-11BFCBEBE607}"

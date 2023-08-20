@@ -2,3 +2,6 @@
 // Licensed under the MIT License.
 
 global using Xunit;
+global using FluentAssertions;
+
+global using Zucturn.Protocol.Exceptions;

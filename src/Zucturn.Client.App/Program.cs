@@ -13,6 +13,6 @@ var logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
 
-var message = new StunMessage(new StunHeader());
+var message = new StunMessage(new StunMessageHeader());
 // socket.Send(message.ToByteArray());
 socket.Send("Hello"u8, address);

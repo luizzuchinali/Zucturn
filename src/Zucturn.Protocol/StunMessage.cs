@@ -5,23 +5,20 @@ namespace Zucturn.Protocol;
 
 public struct StunMessage
 {
-    public StunHeader Header { get; set; }
+    public StunMessageHeader MessageHeader { get; set; }
 
-    public StunMessage(StunHeader header)
+    public StunMessage(StunMessageHeader messageHeader)
     {
-        Header = header;
-    }
-
-    public ReadOnlySpan<byte> ToByteArray()
-    {
-        return new byte[]
-        {
-            0x00
-        };
+        MessageHeader = messageHeader;
     }
 
     public static StunMessage FromByteArray(ReadOnlySpan<byte> buffer)
     {
-        throw new NotImplementedException();
+        if (buffer.IsEmpty)
+            throw new EmptyBufferException("STUN message bufffer can't be empty");
+
+        var header = StunMessageHeader.FromByteArray(buffer);
+
+        return new StunMessage(header);
     }
 }
