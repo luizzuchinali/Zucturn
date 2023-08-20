@@ -1,4 +1,7 @@
-﻿using Serilog;
+﻿// Copyright (c) 2023 Luiz Antonio Anacleto Zuchinali and Contributors
+// Licensed under the MIT License.
+
+using Serilog;
 using System.Net;
 using System.Net.Sockets;
 using Zucturn.Protocol;
