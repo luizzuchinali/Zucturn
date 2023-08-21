@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2023 Luiz Antonio Anacleto Zuchinali and Contributors
 // Licensed under the MIT License.
 
+using System.Buffers.Binary;
+
 namespace Zucturn.Protocol;
 
 public enum StunClass
@@ -13,27 +15,40 @@ public enum StunClass
 
 public enum StunMethod
 {
-    Binding = 0b000000000001
+    Binding = 0b0000_0001
 }
 
 public struct StunMessageHeader
 {
-    public const int MagicCookie = 0x2112A442;
+    public const int MagicCookieValue = 0x2112A442;
     public const int MessageHeaderByteSize = 20;
-    public const int AttributeHeaderByteSize = 4;
+    public static readonly  int AttributeHeaderByteSize = 4;
     public const int TransactionIdByteSize = 12;
 
     public StunClass Class { get; set; }
     public StunMethod Method { get; set; }
-    public uint Magic { get; set; }
+    public ushort MessageLength { get; set; }
+    public uint MagicCookie { get; set; }
+    public TransactionIdentifier TransactionId { get; set; }
 
-    public StunMessageHeader(StunClass @class, StunMethod method, uint magic)
+    public StunMessageHeader(StunClass @class, StunMethod method, ushort messageLength, uint magicCookie,
+        TransactionIdentifier transactionId)
     {
         Class = @class;
         Method = method;
-        Magic = magic;
+        MessageLength = messageLength;
+        MagicCookie = magicCookie;
+        TransactionId = transactionId;
     }
 
+    /// <summary>
+    /// Parses a byte array in big-endian format to construct a <see cref="StunMessageHeader"/> from its binary representation.
+    /// </summary>
+    /// <param name="buffer">The byte array containing the STUN message header in big-endian format.</param>
+    /// <returns>A <see cref="StunMessageHeader"/> representing the parsed STUN message header.</returns>
+    /// <exception cref="MalformatteHeaderException">
+    /// Thrown when the provided buffer does not contain a valid STUN header or when the Magic Cookie is invalid.
+    /// </exception>
     public static StunMessageHeader FromByteArray(ReadOnlySpan<byte> buffer)
     {
         if (buffer.Length < MessageHeaderByteSize)
@@ -43,6 +58,80 @@ public struct StunMessageHeader
         if ((messageTypeByte & 0b1100_0000) != 0)
             throw new MalformatteHeaderException("The first byte should have 00 as most significant bits");
 
-        return new StunMessageHeader(StunClass.Request, StunMethod.Binding, MagicCookie);
+        var (@class, method) = GetMessageType(buffer[..2]);
+        var length = GetLength(buffer[2..4]);
+        var magicCookie = GetMagicCookie(buffer[4..8]);
+        if (magicCookie != MagicCookieValue)
+            throw new MalformatteHeaderException("Invalid Magic Cookie");
+
+        var transactionId = GetTransactionId(buffer[8..MessageHeaderByteSize]);
+
+        return new StunMessageHeader(@class, method, length, magicCookie, transactionId);
+    }
+
+    /// <summary>
+    /// Parses a byte array in Big Endian format and returns a <see cref="ValueTuple{StunClass, StunMethod}"/>.
+    /// </summary>
+    /// <param name="buffer">The byte array to parse in Big Endian format.</param>
+    /// <returns>A tuple containing <see cref="StunClass"/> and <see cref="StunMethod"/>.</returns>
+    /// <exception cref="InvalidDataException">Thrown when invalid data is encountered.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTuple<StunClass, StunMethod> GetMessageType(ReadOnlySpan<byte> buffer)
+    {
+        var @class = (buffer[0] & 0b1111) switch
+        {
+            0b0000_0000 => StunClass.Request,
+            0b0000_0100 => StunClass.Indication,
+            0b0000_1000 => StunClass.SuccessResponse,
+            0b0000_1100 => StunClass.ErrorResponse,
+            _ => throw new InvalidDataException("Invalid class specified")
+        };
+
+        var method = (buffer[1] & 0b1111_1111) switch
+        {
+            0b0000_0001 => StunMethod.Binding,
+            _ => throw new InvalidDataException("Invalid method specified")
+        };
+
+        return (@class, method);
+    }
+
+    /// <summary>
+    /// Retrieves the length value from a buffer in Big Endian format.
+    /// </summary>
+    /// <param name="buffer">The buffer containing the length value in Big Endian format.</param>
+    /// <returns>The length value as a ushort.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ushort GetLength(ReadOnlySpan<byte> buffer)
+    {
+        return BinaryPrimitives.ReadUInt16BigEndian(buffer);
+    }
+
+    /// <summary>
+    /// Retrieves the magic cookie value from a buffer in Big Endian format.
+    /// </summary>
+    /// <param name="buffer">The buffer containing the magic cookie value in Big Endian format.</param>
+    /// <returns>The magic cookie value as a uint.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint GetMagicCookie(ReadOnlySpan<byte> buffer)
+    {
+        if (buffer.Length < sizeof(uint))
+            throw new ArgumentException("Buffer is too short to retrieve the magic cookie.");
+
+        return BinaryPrimitives.ReadUInt32BigEndian(buffer);
+    }
+
+    /// <summary>
+    /// Parses a byte array in big-endian format to construct a <see cref="TransactionIdentifier"/> from its binary representation.
+    /// </summary>
+    /// <param name="buffer">The byte array containing the transaction ID in big-endian format.</param>
+    /// <returns>A <see cref="TransactionIdentifier"/> representing the parsed transaction ID.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TransactionIdentifier GetTransactionId(ReadOnlySpan<byte> buffer)
+    {
+        if (buffer.Length != TransactionIdByteSize)
+            throw new MalformatteHeaderException("Invalid transaction ID size");
+
+        return new TransactionIdentifier(new Memory<byte>(buffer.ToArray()));
     }
 }

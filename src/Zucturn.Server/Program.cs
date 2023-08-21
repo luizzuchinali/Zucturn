@@ -3,7 +3,6 @@
 
 using Serilog;
 using System.Net;
-using System.Text;
 using System.Net.Sockets;
 using Zucturn.Protocol;
 
@@ -21,7 +20,6 @@ logger.Information($"Listening on {ip}:{port}");
 while (socket.Client.IsBound)
 {
     var result = await socket.ReceiveAsync();
-    logger.Information(Encoding.UTF8.GetString(result.Buffer));
-
     var message = StunMessage.FromByteArray(result.Buffer);
+    logger.Information("{@Message}", message);
 }
