@@ -5,6 +5,9 @@ using System.Buffers.Binary;
 
 namespace Zucturn.Protocol;
 
+/// <summary>
+/// Represents the STUN message class.
+/// </summary>
 public enum StunClass
 {
     Request = 0b0000,
@@ -13,16 +16,22 @@ public enum StunClass
     ErrorResponse = 0b1100
 }
 
+/// <summary>
+/// Represents the STUN method.
+/// </summary>
 public enum StunMethod
 {
     Binding = 0b0000_0001
 }
 
+/// <summary>
+/// Represents the STUN message header.
+/// </summary>
 public struct StunMessageHeader
 {
     public const int MagicCookieValue = 0x2112A442;
     public const int MessageHeaderByteSize = 20;
-    public static readonly  int AttributeHeaderByteSize = 4;
+    public static readonly int AttributeHeaderByteSize = 4;
     public const int TransactionIdByteSize = 12;
 
     public StunClass Class { get; set; }
@@ -31,6 +40,14 @@ public struct StunMessageHeader
     public uint MagicCookie { get; set; }
     public TransactionIdentifier TransactionId { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StunMessageHeader"/> struct.
+    /// </summary>
+    /// <param name="class">The STUN message class.</param>
+    /// <param name="method">The STUN method.</param>
+    /// <param name="messageLength">The length of the STUN message.</param>
+    /// <param name="magicCookie">The STUN Magic Cookie.</param>
+    /// <param name="transactionId">The STUN transaction identifier.</param>
     public StunMessageHeader(StunClass @class, StunMethod method, ushort messageLength, uint magicCookie,
         TransactionIdentifier transactionId)
     {
