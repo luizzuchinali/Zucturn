@@ -12,6 +12,6 @@
 
 WIP STUN specs:
 
-* [RFC 3489](https://datatracker.ietf.org/doc/html/rfc3489) - obsolete STUN specs
-* [RFC 5389](https://datatracker.ietf.org/doc/html/rfc5389) - obsolete STUN specs
+* [RFC 3489](https://datatracker.ietf.org/doc/html/rfc3489) - simple STUN specs
+* [RFC 5389](https://datatracker.ietf.org/doc/html/rfc5389) - STUN specs
 * [RFC 8489](https://datatracker.ietf.org/doc/html/rfc8489) - latest STUN specs
