@@ -1,13 +1,12 @@
 ﻿// Copyright (c) 2023 Luiz Antonio Anacleto Zuchinali and Contributors
 // Licensed under the MIT License.
 
-using System.Buffers.Binary;
 using System.Net;
 using System.Net.Sockets;
 using Zucturn.Protocol;
 
 var address = IPEndPoint.Parse("127.0.0.1:3478");
-var socket = new UdpClient(AddressFamily.InterNetwork);
+using var socket = new UdpClient(AddressFamily.InterNetwork);
 
 // var message = new StunMessage(new StunMessageHeader());
 // socket.Send(message.ToByteArray());

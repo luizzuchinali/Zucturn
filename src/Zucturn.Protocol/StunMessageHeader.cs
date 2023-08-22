@@ -37,7 +37,7 @@ public struct StunMessageHeader
     public StunClass Class { get; set; }
     public StunMethod Method { get; set; }
     public ushort MessageLength { get; set; }
-    public uint MagicCookie { get; set; }
+    public int MagicCookie { get; set; }
     public TransactionIdentifier TransactionId { get; set; }
 
     /// <summary>
@@ -48,7 +48,7 @@ public struct StunMessageHeader
     /// <param name="messageLength">The length of the STUN message.</param>
     /// <param name="magicCookie">The STUN Magic Cookie.</param>
     /// <param name="transactionId">The STUN transaction identifier.</param>
-    public StunMessageHeader(StunClass @class, StunMethod method, ushort messageLength, uint magicCookie,
+    public StunMessageHeader(StunClass @class, StunMethod method, ushort messageLength, int magicCookie,
         TransactionIdentifier transactionId)
     {
         Class = @class;
@@ -130,12 +130,12 @@ public struct StunMessageHeader
     /// <param name="buffer">The buffer containing the magic cookie value in Big Endian format.</param>
     /// <returns>The magic cookie value as a uint.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint GetMagicCookie(ReadOnlySpan<byte> buffer)
+    public static int GetMagicCookie(ReadOnlySpan<byte> buffer)
     {
         if (buffer.Length < sizeof(uint))
             throw new ArgumentException("Buffer is too short to retrieve the magic cookie.");
 
-        return BinaryPrimitives.ReadUInt32BigEndian(buffer);
+        return BinaryPrimitives.ReadInt32BigEndian(buffer);
     }
 
     /// <summary>

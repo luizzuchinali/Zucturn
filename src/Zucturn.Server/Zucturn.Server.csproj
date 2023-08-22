@@ -1,29 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
 
-    <PublishAot>true</PublishAot>
-    <InvariantGlobalization>true</InvariantGlobalization>
+        <PublishAot>true</PublishAot>
+        <InvariantGlobalization>true</InvariantGlobalization>
 
-  </PropertyGroup>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <SonarQubeSetting Include="sonar.coverage.exclusions">
-      <Value>**/Program.cs</Value>
-    </SonarQubeSetting>
-  </ItemGroup>
+    <ItemGroup>
+        <SonarQubeSetting Include="sonar.coverage.exclusions">
+            <Value>**/Program.cs</Value>
+        </SonarQubeSetting>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Serilog" Version="3.0.1" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Serilog" Version="3.0.1"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Zucturn.Protocol\Zucturn.Protocol.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Zucturn.Protocol\Zucturn.Protocol.csproj"/>
+    </ItemGroup>
 
 </Project>

@@ -18,12 +18,39 @@ public class StunMessageHeaderTests
         var lengthBytes = BitConverter.GetBytes((ushort)IPAddress.HostToNetworkOrder(512));
         lengthBytes.CopyTo(_validBuffer, 2);
 
-        var magicCookieBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(StunMessageHeader.MagicCookieValue));
+        var magicCookieBytes =
+            BitConverter.GetBytes((uint)IPAddress.HostToNetworkOrder(StunMessageHeader.MagicCookieValue));
         magicCookieBytes.CopyTo(_validBuffer, 4);
 
         var randomBytes = new byte[StunMessageHeader.TransactionIdByteSize];
         new Random().NextBytes(randomBytes);
         randomBytes.CopyTo(_validBuffer, 8);
+    }
+
+    [Fact]
+    public void StunMessageHeader_Properties_ShouldWorkCorrectly()
+    {
+        // Arrange
+        var header = new StunMessageHeader();
+        const StunClass expectedClass = StunClass.Request;
+        const StunMethod expectedMethod = StunMethod.Binding;
+        const ushort expectedMessageLength = (ushort)1234;
+        const int expectedMagicCookie = StunMessageHeader.MagicCookieValue;
+        var expectedTransactionId = TransactionIdentifier.NewIdentifier();
+
+        // Act
+        header.Class = expectedClass;
+        header.Method = expectedMethod;
+        header.MessageLength = expectedMessageLength;
+        header.MagicCookie = expectedMagicCookie;
+        header.TransactionId = expectedTransactionId;
+
+        // Assert
+        header.Class.Should().Be(expectedClass);
+        header.Method.Should().Be(expectedMethod);
+        header.MessageLength.Should().Be(expectedMessageLength);
+        header.MagicCookie.Should().Be(expectedMagicCookie);
+        header.TransactionId.Should().Be(expectedTransactionId);
     }
 
     [Fact]
@@ -181,7 +208,7 @@ public class StunMessageHeaderTests
         var magicCookie = StunMessageHeader.GetMagicCookie(buffer);
 
         // Assert
-        const uint expectedMagicCookie = 0x2112A442;
+        const int expectedMagicCookie = 0x2112A442;
         magicCookie.Should().Be(expectedMagicCookie);
     }
 

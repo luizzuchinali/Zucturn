@@ -16,7 +16,7 @@ public readonly struct TransactionIdentifier
     /// <summary>
     /// Gets the length of the Transaction Identifier in bytes (12 bytes).
     /// </summary>
-    public int Length => 12;
+    public static int Length => 12;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TransactionIdentifier"/> struct.

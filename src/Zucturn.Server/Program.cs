@@ -10,7 +10,7 @@ var ip = args[0];
 var port = args[1];
 
 var address = IPEndPoint.Parse($"{ip}:{port}");
-var socket = new UdpClient(address);
+using var socket = new UdpClient(address);
 
 var logger = new LoggerConfiguration()
     .WriteTo.Console()
