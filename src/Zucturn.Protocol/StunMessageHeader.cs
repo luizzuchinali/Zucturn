@@ -33,7 +33,6 @@ public struct StunMessageHeader
     public const int MagicCookieValue = 0x2112A442;
     public const int MessageHeaderByteSize = 20;
     public static readonly int AttributeHeaderByteSize = 4;
-    public const int TransactionIdByteSize = 12;
 
     public StunClass Class { get; set; }
     public StunMethod Method { get; set; }
@@ -88,11 +87,17 @@ public struct StunMessageHeader
         var lengthBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)MessageLength));
         Buffer.BlockCopy(lengthBytes, 0, buffer, 2, 2);
 
+        if (TransactionId.IsRfc3849)
+        {
+            Buffer.BlockCopy(TransactionId.ToByteArray(), 0, buffer, 4, TransactionIdentifier.Rfc3849Size);
+            return buffer;
+        }
+
         var magicCookieBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(MagicCookie));
         Buffer.BlockCopy(magicCookieBytes, 0, buffer, 4, 4);
 
         var transactionIdBytes = TransactionId.ToByteArray();
-        Buffer.BlockCopy(transactionIdBytes, 0, buffer, 8, TransactionIdByteSize);
+        Buffer.BlockCopy(transactionIdBytes, 0, buffer, 8, TransactionIdentifier.Size);
 
         return buffer;
     }
@@ -117,10 +122,12 @@ public struct StunMessageHeader
         var (@class, method) = GetMessageType(buffer[..2]);
         var length = GetLength(buffer[2..4]);
         var magicCookie = GetMagicCookie(buffer[4..8]);
-        if (magicCookie != MagicCookieValue)
-            throw new MalformatteHeaderException("Invalid Magic Cookie");
 
-        var transactionId = GetTransactionId(buffer[8..MessageHeaderByteSize]);
+        // Verify if is a RFC 3489 message
+        var transactionId = GetTransactionId(magicCookie != MagicCookieValue
+            ? buffer[4..MessageHeaderByteSize]
+            : buffer[8..MessageHeaderByteSize]
+        );
 
         return new StunMessageHeader(@class, method, length, magicCookie, transactionId);
     }
@@ -167,14 +174,18 @@ public struct StunMessageHeader
     /// Retrieves the magic cookie value from a buffer in Big Endian format.
     /// </summary>
     /// <param name="buffer">The buffer containing the magic cookie value in Big Endian format.</param>
-    /// <returns>The magic cookie value as a uint.</returns>
+    /// <returns>
+    /// The magic cookie value as an integer.
+    /// If the magic cookie value matches the predefined MagicCookieValue, it returns the magic cookie value as is; otherwise, it returns 0.
+    /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetMagicCookie(ReadOnlySpan<byte> buffer)
     {
         if (buffer.Length < sizeof(uint))
             throw new ArgumentException("Buffer is too short to retrieve the magic cookie.");
 
-        return BinaryPrimitives.ReadInt32BigEndian(buffer);
+        var messageCookie = BinaryPrimitives.ReadInt32BigEndian(buffer);
+        return messageCookie != MagicCookieValue ? 0 : messageCookie;
     }
 
     /// <summary>
@@ -185,7 +196,7 @@ public struct StunMessageHeader
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TransactionIdentifier GetTransactionId(ReadOnlySpan<byte> buffer)
     {
-        if (buffer.Length != TransactionIdByteSize)
+        if (buffer.Length != TransactionIdentifier.Size && buffer.Length != TransactionIdentifier.Rfc3849Size)
             throw new MalformatteHeaderException("Invalid transaction ID size");
 
         return new TransactionIdentifier(new Memory<byte>(buffer.ToArray()));

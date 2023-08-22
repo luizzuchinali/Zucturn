@@ -21,9 +21,29 @@ public class StunMessageHeaderTests
             BitConverter.GetBytes((uint)IPAddress.HostToNetworkOrder(StunMessageHeader.MagicCookieValue));
         magicCookieBytes.CopyTo(_validBuffer, 4);
 
-        var randomBytes = new byte[StunMessageHeader.TransactionIdByteSize];
+        var randomBytes = new byte[TransactionIdentifier.Size];
         new Random().NextBytes(randomBytes);
         randomBytes.CopyTo(_validBuffer, 8);
+    }
+
+    [Fact]
+    public void StunMessageHeader_ShouldInitializeHeaderProperties()
+    {
+        // Arrange
+        const StunClass expectedClass = StunClass.Request;
+        const StunMethod expectedMethod = StunMethod.Binding;
+        const ushort expectedMessageLength = (ushort)5123;
+
+        // Act
+        var header = new StunMessageHeader(expectedClass, expectedMethod, expectedMessageLength);
+
+        // Assert
+        header.Class.Should().Be(expectedClass);
+        header.Method.Should().Be(expectedMethod);
+        header.MessageLength.Should().Be(expectedMessageLength);
+        header.MagicCookie.Should().Be(StunMessageHeader.MagicCookieValue);
+        header.TransactionId.Should().NotBeNull();
+        header.TransactionId.ToByteArray().Length.Should().Be(TransactionIdentifier.Size);
     }
 
     [Fact]
@@ -91,18 +111,43 @@ public class StunMessageHeaderTests
         byteArray[7].Should().Be(0x42);
 
         // TransactionId
-        byteArray[8].Should().Be(0x01);
-        byteArray[9].Should().Be(0x02); // TransactionId
-        byteArray[10].Should().Be(0x03); // TransactionId
-        byteArray[11].Should().Be(0x04); // TransactionId
-        byteArray[12].Should().Be(0x05); // TransactionId
-        byteArray[13].Should().Be(0x06); // TransactionId
-        byteArray[14].Should().Be(0x07); // TransactionId
-        byteArray[15].Should().Be(0x08); // TransactionId
-        byteArray[16].Should().Be(0x09); // TransactionId
-        byteArray[17].Should().Be(0x0A); // TransactionId
-        byteArray[18].Should().Be(0x0B); // TransactionId
-        byteArray[19].Should().Be(0x0C); // TransactionId
+        byteArray[8..20].Should().BeEquivalentTo(header.TransactionId.ToByteArray());
+    }
+
+    [Fact]
+    public void ToByteArray_ShouldConvertToBigEndianByteArray_ForOldRFC()
+    {
+        // Arrange
+        var header = new StunMessageHeader
+        {
+            Class = StunClass.Request,
+            Method = StunMethod.Binding,
+            MessageLength = 5123,
+            TransactionId = new TransactionIdentifier(new byte[]
+            {
+                0x10, 0x11, 0x12, 0x13, 0x14, 0x03,
+                0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+                0x0A, 0x0B, 0x0C, 0x19
+            })
+        };
+
+        // Act
+        var byteArray = header.ToByteArray();
+
+        // Assert
+        byteArray.Should().NotBeNull();
+        byteArray.Length.Should().Be(StunMessageHeader.MessageHeaderByteSize);
+
+        // Verify the byte order of fields for the old RFC scenario.
+        byteArray[0].Should().Be((byte)StunClass.Request);
+        byteArray[1].Should().Be((byte)StunMethod.Binding);
+
+        // MessageLength
+        byteArray[2].Should().Be(0x14);
+        byteArray[3].Should().Be(0x03);
+
+        // TransactionId
+        byteArray[4..20].Should().BeEquivalentTo(header.TransactionId.ToByteArray());
     }
 
     [Fact]
@@ -143,20 +188,26 @@ public class StunMessageHeaderTests
     }
 
     [Fact]
-    public void FromByteArray_ShouldThrowMalformatteHeaderException_WhenMagicCookieInvalid()
+    public void FromByteArray_ShouldParseRFC3489Header_WhenMagicCookieIsNotMatching()
     {
         // Arrange
-        var buffer = new byte[StunMessageHeader.MessageHeaderByteSize];
-        buffer[0] = 0b0011_0000;
-        buffer[1] = 0b0000_0001;
-        var magicCookie = BitConverter.GetBytes(0x12345678);
-        magicCookie.CopyTo(buffer, 4);
+        var buffer = new byte[]
+        {
+            0b0000_0000, 0b0000_0001, // Message Type (Binding Request)
+            0, 0, // Message Length
+            13, 14, 15, 16, // Invalid Magic Cookie
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 // Transaction ID
+        };
 
         // Act
-        Action act = () => StunMessageHeader.FromByteArray(buffer);
+        var header = StunMessageHeader.FromByteArray(buffer);
 
         // Assert
-        act.Should().Throw<MalformatteHeaderException>().WithMessage("Invalid Magic Cookie");
+        header.Class.Should().Be(StunClass.Request);
+        header.Method.Should().Be(StunMethod.Binding);
+        header.MessageLength.Should().Be(0);
+        header.MagicCookie.Should().Be(0);
+        header.TransactionId.ToString().Should().Be("0d0e0f100102030405060708090a0b0c");
     }
 
     [Fact]
@@ -277,7 +328,7 @@ public class StunMessageHeaderTests
     [Fact]
     public void GetTransactionId_ShouldThrowMalformatteHeaderException_WhenInvalidSize()
     {
-        var buffer = new byte[StunMessageHeader.TransactionIdByteSize + 1];
+        var buffer = new byte[TransactionIdentifier.Size + 1];
 
         // Act & Assert
         Action act = () => StunMessageHeader.GetTransactionId(buffer);

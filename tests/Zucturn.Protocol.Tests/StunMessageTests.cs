@@ -6,6 +6,36 @@ namespace Zucturn.Protocol.Tests;
 public class StunMessageTests
 {
     [Fact]
+    public void ToByteArray_ShouldConvertToBigEndianByteArray()
+    {
+        // Arrange
+        var message = new StunMessage(new StunMessageHeader
+        {
+            Class = StunClass.Request,
+            Method = StunMethod.Binding,
+            MessageLength = 5123,
+            TransactionId = new TransactionIdentifier(new byte[]
+            {
+                0x10, 0x11, 0x12, 0x13, 0x14, 0x03,
+                0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+                0x0A, 0x0B, 0x0C, 0x19
+            })
+        });
+
+        // Act
+        var byteArray = message.ToByteArray();
+
+        // Assert
+        byteArray.Should().NotBeNull();
+        byteArray.Length.Should().Be(StunMessageHeader.MessageHeaderByteSize);
+
+        byteArray[0].Should().Be((byte)StunClass.Request);
+        byteArray[1].Should().Be((byte)StunMethod.Binding);
+        byteArray[2..4].Should().BeEquivalentTo(new byte[] { 0x14, 0x03 });
+        byteArray[4..20].Should().BeEquivalentTo(message.MessageHeader.TransactionId.ToByteArray());
+    }
+
+    [Fact]
     public void FromByteArray_ShouldCreateStunMessage_WhenValidHeader()
     {
         // Arrange

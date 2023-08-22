@@ -46,7 +46,7 @@ public class TransactionIdentifierTests
         var identifier = TransactionIdentifier.NewIdentifier();
 
         // Assert
-        TransactionIdentifier.Length.Should().Be(12);
+        TransactionIdentifier.Size.Should().Be(12);
     }
 
     [Fact]

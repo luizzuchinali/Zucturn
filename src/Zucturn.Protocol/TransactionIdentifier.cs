@@ -7,16 +7,28 @@ using System.Security.Cryptography;
 namespace Zucturn.Protocol;
 
 /// <summary>
-/// Represents a STUN Transaction Identifier, a 96-bit identifier used to uniquely identify STUN transactions.
+/// Represents a STUN Transaction Identifier, a 96-bit or 128-bit (for backward compatibility) identifier used to uniquely identify STUN transactions.
+/// For more information, refer to RFC 8489: https://datatracker.ietf.org/doc/html/rfc8489#autoid-5
 /// </summary>
 public readonly struct TransactionIdentifier
 {
     private readonly ReadOnlyMemory<byte> _bytes;
 
     /// <summary>
+    /// Gets a value indicating whether this <see cref="TransactionIdentifier"/> represents an RFC 3849 Transaction ID.
+    /// RFC 3849 defines a 128-bit format for Transaction IDs.
+    /// </summary>
+    public bool IsRfc3849 => _bytes.Length == Rfc3849Size;
+
+    /// <summary>
     /// Gets the length of the Transaction Identifier in bytes (12 bytes).
     /// </summary>
-    public static int Length => 12;
+    public static int Size => 12;
+
+    /// <summary>
+    /// Gets the length of the Transaction Identifier in bytes (16 bytes).
+    /// </summary>
+    public static int Rfc3849Size => 16;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TransactionIdentifier"/> struct.
@@ -25,14 +37,15 @@ public readonly struct TransactionIdentifier
     /// <exception cref="ArgumentException">Thrown if the provided byte array is not 12 bytes long.</exception>
     public TransactionIdentifier(ReadOnlyMemory<byte> bytes)
     {
-        if (bytes.Length != Length)
-            throw new ArgumentException($"Transaction ID must be a {Length}-byte array.", nameof(bytes));
+        if (bytes.Length != Size && bytes.Length != Rfc3849Size)
+            throw new ArgumentException($"Transaction ID must be a {Size}-byte or {Rfc3849Size}-byte array.",
+                nameof(bytes));
 
         _bytes = bytes;
     }
 
     /// <summary>
-    /// Generates a new <see cref="TransactionIdentifier"/>.
+    /// Generates a new 96-bit <see cref="TransactionIdentifier"/>.
     /// </summary>
     /// <remarks>
     /// The generated identifier is cryptographically random and is suitable for use in STUN transactions.
@@ -78,13 +91,13 @@ public readonly struct TransactionIdentifier
     /// <returns>The computed hash code.</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(
-            HashCode.Combine(_bytes.Span[0], _bytes.Span[1], _bytes.Span[2], _bytes.Span[3], _bytes.Span[4],
-                _bytes.Span[5]),
-            HashCode.Combine(_bytes.Span[6], _bytes.Span[7], _bytes.Span[8], _bytes.Span[9], _bytes.Span[10],
-                _bytes.Span[11])
-        );
+        var hashCode = 17;
+        foreach (var b in _bytes.Span)
+            hashCode = hashCode * 31 + b.GetHashCode();
+
+        return hashCode;
     }
+
 
     /// <summary>
     /// Determines whether two <see cref="TransactionIdentifier"/> objects are equal.
@@ -110,11 +123,13 @@ public readonly struct TransactionIdentifier
 
     /// <summary>
     /// Returns a hexadecimal string representation of the <see cref="TransactionIdentifier"/>.
+    /// If this identifier is an RFC 3849 Transaction ID, the resulting string will be 32 characters long,
+    /// otherwise, it will be 24 characters long.
     /// </summary>
     /// <returns>A hexadecimal string.</returns>
     public override string ToString()
     {
-        var builder = new StringBuilder(24);
+        var builder = new StringBuilder(IsRfc3849 ? 32 : 24);
 
         foreach (var b in _bytes.Span)
             builder.Append($"{b:x2}");
