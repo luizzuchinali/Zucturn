@@ -20,6 +20,17 @@ public struct StunMessage
     }
 
     /// <summary>
+    /// Converts the <see cref="StunMessage"/> to a byte array in big-endian format.
+    /// </summary>
+    /// <returns>A byte array representing the <see cref="StunMessage"/> in big-endian format.</returns>
+    public byte[] ToByteArray()
+    {
+        var headerBytes = MessageHeader.ToByteArray();
+
+        return headerBytes;
+    }
+
+    /// <summary>
     /// Parses a byte array to construct a <see cref="StunMessage"/> from its binary representation.
     /// </summary>
     /// <param name="buffer">The byte array containing the binary representation of the STUN message.</param>

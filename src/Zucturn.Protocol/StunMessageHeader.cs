@@ -1,8 +1,8 @@
 ﻿// Copyright (c) 2023 Luiz Antonio Anacleto Zuchinali and Contributors
 // Licensed under the MIT License.
 
-using System.Buffers.Binary;
 using System.Net;
+using System.Buffers.Binary;
 
 namespace Zucturn.Protocol;
 
@@ -40,6 +40,21 @@ public struct StunMessageHeader
     public ushort MessageLength { get; set; }
     public int MagicCookie { get; set; }
     public TransactionIdentifier TransactionId { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StunMessageHeader"/> struct.
+    /// </summary>
+    /// <param name="class">The STUN message class.</param>
+    /// <param name="method">The STUN method.</param>
+    /// <param name="messageLength">The length of the STUN message.</param>
+    public StunMessageHeader(StunClass @class, StunMethod method, ushort messageLength)
+    {
+        Class = @class;
+        Method = method;
+        MessageLength = messageLength;
+        MagicCookie = MagicCookieValue;
+        TransactionId = TransactionIdentifier.NewIdentifier();
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StunMessageHeader"/> struct.
