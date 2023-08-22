@@ -69,7 +69,7 @@ public struct StunMessageHeader
 
         buffer[0] = (byte)((byte)Class & 0b0000_1111);
         buffer[1] = (byte)((byte)Method & 0b0000_1111);
-        Console.WriteLine(BitConverter.IsLittleEndian);
+
         var lengthBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)MessageLength));
         Buffer.BlockCopy(lengthBytes, 0, buffer, 2, 2);
 
