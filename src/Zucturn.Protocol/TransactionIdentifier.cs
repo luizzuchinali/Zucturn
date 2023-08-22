@@ -54,9 +54,9 @@ public readonly struct TransactionIdentifier
     /// Converts the Transaction Identifier to a <see cref="ReadOnlySpan{byte}"/>.
     /// </summary>
     /// <returns>A read-only span representing the Transaction Identifier.</returns>
-    public ReadOnlySpan<byte> ToReadOnlySpan()
+    public byte[] ToByteArray()
     {
-        return _bytes.Span;
+        return _bytes.Span.ToArray();
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public readonly struct TransactionIdentifier
     public override bool Equals(object? obj)
     {
         if (obj is TransactionIdentifier other)
-            return ToReadOnlySpan().SequenceEqual(other.ToReadOnlySpan());
+            return ToByteArray().SequenceEqual(other.ToByteArray());
 
         return false;
     }

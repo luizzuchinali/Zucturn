@@ -57,7 +57,7 @@ public class TransactionIdentifierTests
         var identifier2 = TransactionIdentifier.NewIdentifier();
 
         // Assert
-        identifier1.ToReadOnlySpan().ToArray().Should().NotBeEquivalentTo(identifier2.ToReadOnlySpan().ToArray());
+        identifier1.ToByteArray().ToArray().Should().NotBeEquivalentTo(identifier2.ToByteArray().ToArray());
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class TransactionIdentifierTests
         var transactionId = new TransactionIdentifier(bytes);
 
         // Act
-        var span = transactionId.ToReadOnlySpan();
+        var span = transactionId.ToByteArray();
 
         // Assert
         span.ToArray().Should().BeEquivalentTo(bytes);

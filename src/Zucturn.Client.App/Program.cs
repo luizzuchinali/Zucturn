@@ -31,6 +31,6 @@ using var writer = new BinaryWriter(stream);
 writer.Write(BitConverter.GetBytes(type));
 writer.Write(BitConverter.GetBytes(length));
 writer.Write(BitConverter.GetBytes(magicCookie));
-writer.Write(TransactionIdentifier.NewIdentifier().ToReadOnlySpan());
+writer.Write(TransactionIdentifier.NewIdentifier().ToByteArray());
 
 socket.Send(stream.GetBuffer(), address);

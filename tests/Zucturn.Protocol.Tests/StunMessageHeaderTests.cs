@@ -1,7 +1,6 @@
 ﻿// // Copyright (c) 2023 Luiz Antonio Anacleto Zuchinali and Contributors
 // // Licensed under the MIT License.
 
-using System.Buffers.Binary;
 using System.Net;
 
 namespace Zucturn.Protocol.Tests;
@@ -34,7 +33,7 @@ public class StunMessageHeaderTests
         var header = new StunMessageHeader();
         const StunClass expectedClass = StunClass.Request;
         const StunMethod expectedMethod = StunMethod.Binding;
-        const ushort expectedMessageLength = (ushort)1234;
+        const ushort expectedMessageLength = 1234;
         const int expectedMagicCookie = StunMessageHeader.MagicCookieValue;
         var expectedTransactionId = TransactionIdentifier.NewIdentifier();
 
@@ -51,6 +50,59 @@ public class StunMessageHeaderTests
         header.MessageLength.Should().Be(expectedMessageLength);
         header.MagicCookie.Should().Be(expectedMagicCookie);
         header.TransactionId.Should().Be(expectedTransactionId);
+    }
+
+    [Fact]
+    public void ToByteArray_ShouldConvertToBigEndianByteArray()
+    {
+        // Arrange
+        var header = new StunMessageHeader
+        {
+            Class = StunClass.Request,
+            Method = StunMethod.Binding,
+            MessageLength = 5123,
+            MagicCookie = 0x2112A442,
+            TransactionId = new TransactionIdentifier(new byte[]
+            {
+                0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+                0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C
+            })
+        };
+
+        // Act
+        var byteArray = header.ToByteArray();
+
+        // Assert
+        byteArray.Should().NotBeNull();
+        byteArray.Length.Should().Be(StunMessageHeader.MessageHeaderByteSize);
+
+        // Verify the byte order of fields.
+        byteArray[0].Should().Be((byte)StunClass.Request);
+        byteArray[1].Should().Be((byte)StunMethod.Binding);
+
+        //MessageLength
+        byteArray[2].Should().Be(0x14);
+        byteArray[3].Should().Be(0x03);
+
+        // MagicCookie
+        byteArray[4].Should().Be(0x21);
+        byteArray[5].Should().Be(0x12);
+        byteArray[6].Should().Be(0xA4);
+        byteArray[7].Should().Be(0x42);
+
+        // TransactionId
+        byteArray[8].Should().Be(0x01);
+        byteArray[9].Should().Be(0x02); // TransactionId
+        byteArray[10].Should().Be(0x03); // TransactionId
+        byteArray[11].Should().Be(0x04); // TransactionId
+        byteArray[12].Should().Be(0x05); // TransactionId
+        byteArray[13].Should().Be(0x06); // TransactionId
+        byteArray[14].Should().Be(0x07); // TransactionId
+        byteArray[15].Should().Be(0x08); // TransactionId
+        byteArray[16].Should().Be(0x09); // TransactionId
+        byteArray[17].Should().Be(0x0A); // TransactionId
+        byteArray[18].Should().Be(0x0B); // TransactionId
+        byteArray[19].Should().Be(0x0C); // TransactionId
     }
 
     [Fact]

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Buffers.Binary;
+using System.Net;
 
 namespace Zucturn.Protocol;
 
@@ -10,10 +11,10 @@ namespace Zucturn.Protocol;
 /// </summary>
 public enum StunClass
 {
-    Request = 0b0000,
-    Indication = 0b0100,
-    SuccessResponse = 0b1000,
-    ErrorResponse = 0b1100
+    Request = 0b0000_0000,
+    Indication = 0b0000_0100,
+    SuccessResponse = 0b0000_1000,
+    ErrorResponse = 0b0000_1100
 }
 
 /// <summary>
@@ -56,6 +57,29 @@ public struct StunMessageHeader
         MessageLength = messageLength;
         MagicCookie = magicCookie;
         TransactionId = transactionId;
+    }
+
+    /// <summary>
+    /// Converts the <see cref="StunMessageHeader"/> to a byte array in big-endian format.
+    /// </summary>
+    /// <returns>A byte array representing the <see cref="StunMessageHeader"/> in big-endian format.</returns>
+    public byte[] ToByteArray()
+    {
+        var buffer = new byte[MessageHeaderByteSize];
+
+        buffer[0] = (byte)((byte)Class & 0b0000_1111);
+        buffer[1] = (byte)((byte)Method & 0b0000_1111);
+        Console.WriteLine(BitConverter.IsLittleEndian);
+        var lengthBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)MessageLength));
+        Buffer.BlockCopy(lengthBytes, 0, buffer, 2, 2);
+
+        var magicCookieBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(MagicCookie));
+        Buffer.BlockCopy(magicCookieBytes, 0, buffer, 4, 4);
+
+        var transactionIdBytes = TransactionId.ToByteArray();
+        Buffer.BlockCopy(transactionIdBytes, 0, buffer, 8, TransactionIdByteSize);
+
+        return buffer;
     }
 
     /// <summary>
