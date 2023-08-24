@@ -160,7 +160,7 @@ public class StunMessageHeaderTests
         Action act = () => StunMessageHeader.FromByteArray(buffer);
 
         // Assert
-        act.Should().Throw<MalformatteHeaderException>();
+        act.Should().Throw<MalformattedHeaderException>();
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public class StunMessageHeaderTests
         Action act = () => StunMessageHeader.FromByteArray(buffer);
 
         // Assert
-        act.Should().Throw<MalformatteHeaderException>();
+        act.Should().Throw<MalformattedHeaderException>();
     }
 
     [Fact]
@@ -332,6 +332,6 @@ public class StunMessageHeaderTests
 
         // Act & Assert
         Action act = () => StunMessageHeader.GetTransactionId(buffer);
-        act.Should().Throw<MalformatteHeaderException>();
+        act.Should().Throw<MalformattedHeaderException>();
     }
 }

@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace Zucturn.Protocol;
 
 // @formatter:off
-public enum EStunAttribute
+public enum EStunAttribute : ushort
 {
     #region Mandatory
     [EnumMember(Value = "MAPPED-ADDRESS")]

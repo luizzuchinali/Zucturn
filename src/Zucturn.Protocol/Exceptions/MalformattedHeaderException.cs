@@ -3,9 +3,9 @@
 
 namespace Zucturn.Protocol.Exceptions;
 
-public class MalformatteHeaderException : Exception
+public class MalformattedHeaderException : Exception
 {
-    public MalformatteHeaderException(string message) : base(message)
+    public MalformattedHeaderException(string message) : base(message)
     {
     }
 }

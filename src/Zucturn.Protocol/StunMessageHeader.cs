@@ -107,17 +107,17 @@ public struct StunMessageHeader
     /// </summary>
     /// <param name="buffer">The byte array containing the STUN message header in big-endian format.</param>
     /// <returns>A <see cref="StunMessageHeader"/> representing the parsed STUN message header.</returns>
-    /// <exception cref="MalformatteHeaderException">
+    /// <exception cref="MalformattedHeaderException">
     /// Thrown when the provided buffer does not contain a valid STUN header or when the Magic Cookie is invalid.
     /// </exception>
     public static StunMessageHeader FromByteArray(ReadOnlySpan<byte> buffer)
     {
         if (buffer.Length < MessageHeaderByteSize)
-            throw new MalformatteHeaderException("The header must be 20 byte sized");
+            throw new MalformattedHeaderException("The header must be 20 byte sized");
 
         var messageTypeByte = buffer[0];
         if ((messageTypeByte & 0b1100_0000) != 0)
-            throw new MalformatteHeaderException("The first byte should have 00 as most significant bits");
+            throw new MalformattedHeaderException("The first byte should have 00 as most significant bits");
 
         var (@class, method) = GetMessageType(buffer[..2]);
         var length = GetLength(buffer[2..4]);
@@ -197,7 +197,7 @@ public struct StunMessageHeader
     public static TransactionIdentifier GetTransactionId(ReadOnlySpan<byte> buffer)
     {
         if (buffer.Length != TransactionIdentifier.Size && buffer.Length != TransactionIdentifier.Rfc3849Size)
-            throw new MalformatteHeaderException("Invalid transaction ID size");
+            throw new MalformattedHeaderException("Invalid transaction ID size");
 
         return new TransactionIdentifier(buffer.ToArray());
     }
