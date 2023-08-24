@@ -9,6 +9,7 @@ namespace Zucturn.Protocol;
 public struct StunMessage
 {
     public StunMessageHeader MessageHeader { get; set; }
+    public Memory<StunAttribute> Attributes { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StunMessage"/> struct with the specified message header.

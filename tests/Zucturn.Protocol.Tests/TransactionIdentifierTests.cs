@@ -32,8 +32,8 @@ public class TransactionIdentifierTests
     public void NewIdentifier_ShouldReturnDifferentIdentifiers_WhenCalledTwice()
     {
         // Act
-        var identifier1 = TransactionIdentifier.NewIdentifier();
-        var identifier2 = TransactionIdentifier.NewIdentifier();
+        var identifier1 = new TransactionIdentifier();
+        var identifier2 = new TransactionIdentifier();
 
         // Assert
         identifier1.Should().NotBe(identifier2);
@@ -43,18 +43,18 @@ public class TransactionIdentifierTests
     public void NewIdentifier_ShouldReturnIdentifierWithCorrectLength()
     {
         // Act
-        var identifier = TransactionIdentifier.NewIdentifier();
+        var identifier = new TransactionIdentifier();
 
         // Assert
-        TransactionIdentifier.Size.Should().Be(12);
+        identifier.ToByteArray().Length.Should().Be(12);
     }
 
     [Fact]
     public void NewIdentifier_ShouldReturnIdentifierWithRandomBytes()
     {
         // Act
-        var identifier1 = TransactionIdentifier.NewIdentifier();
-        var identifier2 = TransactionIdentifier.NewIdentifier();
+        var identifier1 = new TransactionIdentifier();
+        var identifier2 = new TransactionIdentifier();
 
         // Assert
         identifier1.ToByteArray().ToArray().Should().NotBeEquivalentTo(identifier2.ToByteArray().ToArray());

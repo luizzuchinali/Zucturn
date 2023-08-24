@@ -11,8 +11,8 @@ public class StunMessageTests
         // Arrange
         var message = new StunMessage(new StunMessageHeader
         {
-            Class = StunClass.Request,
-            Method = StunMethod.Binding,
+            Class = EStunClass.Request,
+            Method = EStunMethod.Binding,
             MessageLength = 5123,
             TransactionId = new TransactionIdentifier(new byte[]
             {
@@ -29,8 +29,8 @@ public class StunMessageTests
         byteArray.Should().NotBeNull();
         byteArray.Length.Should().Be(StunMessageHeader.MessageHeaderByteSize);
 
-        byteArray[0].Should().Be((byte)StunClass.Request);
-        byteArray[1].Should().Be((byte)StunMethod.Binding);
+        byteArray[0].Should().Be((byte)EStunClass.Request);
+        byteArray[1].Should().Be((byte)EStunMethod.Binding);
         byteArray[2..4].Should().BeEquivalentTo(new byte[] { 0x14, 0x03 });
         byteArray[4..20].Should().BeEquivalentTo(message.MessageHeader.TransactionId.ToByteArray());
     }
@@ -50,8 +50,8 @@ public class StunMessageTests
         var stunMessage = StunMessage.FromByteArray(headerBytes);
 
         // Assert
-        stunMessage.MessageHeader.Class.Should().Be(StunClass.Request);
-        stunMessage.MessageHeader.Method.Should().Be(StunMethod.Binding);
+        stunMessage.MessageHeader.Class.Should().Be(EStunClass.Request);
+        stunMessage.MessageHeader.Method.Should().Be(EStunMethod.Binding);
         stunMessage.MessageHeader.MagicCookie.Should().Be(StunMessageHeader.MagicCookieValue);
         stunMessage.MessageHeader.MessageLength.Should().Be(8);
         stunMessage.MessageHeader.TransactionId.ToString().Should().Be("0102030405060708090a0b0c");

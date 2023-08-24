@@ -1,6 +1,7 @@
 ﻿// // Copyright (c) 2023 Luiz Antonio Anacleto Zuchinali and Contributors
 // // Licensed under the MIT License.
 
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Security.Cryptography;
 
@@ -31,6 +32,25 @@ public readonly struct TransactionIdentifier
     public static int Rfc3849Size => 16;
 
     /// <summary>
+    /// Generates a new 96-bit <see cref="TransactionIdentifier"/>.
+    /// </summary>
+    /// <remarks>
+    /// The generated identifier is cryptographically random and is suitable for use in STUN transactions.
+    /// </remarks>
+    /// <returns>A new <see cref="TransactionIdentifier"/>.</returns>
+    public TransactionIdentifier()
+    {
+        var transactionId = new byte[12];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(transactionId);
+
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(transactionId);
+
+        _bytes = new ReadOnlyMemory<byte>(transactionId);
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="TransactionIdentifier"/> struct.
     /// </summary>
     /// <param name="bytes">The 12-byte Transaction ID.</param>
@@ -42,25 +62,6 @@ public readonly struct TransactionIdentifier
                 nameof(bytes));
 
         _bytes = bytes;
-    }
-
-    /// <summary>
-    /// Generates a new 96-bit <see cref="TransactionIdentifier"/>.
-    /// </summary>
-    /// <remarks>
-    /// The generated identifier is cryptographically random and is suitable for use in STUN transactions.
-    /// </remarks>
-    /// <returns>A new <see cref="TransactionIdentifier"/>.</returns>
-    public static TransactionIdentifier NewIdentifier()
-    {
-        var transactionId = new byte[12];
-        using var rng = RandomNumberGenerator.Create();
-        rng.GetBytes(transactionId);
-        return new TransactionIdentifier(new ReadOnlyMemory<byte>(
-            BitConverter.IsLittleEndian
-                ? transactionId.Reverse().ToArray()
-                : transactionId)
-        );
     }
 
     /// <summary>

@@ -9,7 +9,7 @@ namespace Zucturn.Protocol;
 /// <summary>
 /// Represents the STUN message class.
 /// </summary>
-public enum StunClass
+public enum EStunClass
 {
     Request = 0b0000_0000,
     Indication = 0b0000_0100,
@@ -20,7 +20,7 @@ public enum StunClass
 /// <summary>
 /// Represents the STUN method.
 /// </summary>
-public enum StunMethod
+public enum EStunMethod
 {
     Binding = 0b0000_0001
 }
@@ -34,8 +34,8 @@ public struct StunMessageHeader
     public const int MessageHeaderByteSize = 20;
     public static readonly int AttributeHeaderByteSize = 4;
 
-    public StunClass Class { get; set; }
-    public StunMethod Method { get; set; }
+    public EStunClass Class { get; set; }
+    public EStunMethod Method { get; set; }
     public ushort MessageLength { get; set; }
     public int MagicCookie { get; set; }
     public TransactionIdentifier TransactionId { get; set; }
@@ -46,13 +46,13 @@ public struct StunMessageHeader
     /// <param name="class">The STUN message class.</param>
     /// <param name="method">The STUN method.</param>
     /// <param name="messageLength">The length of the STUN message.</param>
-    public StunMessageHeader(StunClass @class, StunMethod method, ushort messageLength)
+    public StunMessageHeader(EStunClass @class, EStunMethod method, ushort messageLength)
     {
         Class = @class;
         Method = method;
         MessageLength = messageLength;
         MagicCookie = MagicCookieValue;
-        TransactionId = TransactionIdentifier.NewIdentifier();
+        TransactionId = new TransactionIdentifier();
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public struct StunMessageHeader
     /// <param name="messageLength">The length of the STUN message.</param>
     /// <param name="magicCookie">The STUN Magic Cookie.</param>
     /// <param name="transactionId">The STUN transaction identifier.</param>
-    public StunMessageHeader(StunClass @class, StunMethod method, ushort messageLength, int magicCookie,
+    public StunMessageHeader(EStunClass @class, EStunMethod method, ushort messageLength, int magicCookie,
         TransactionIdentifier transactionId)
     {
         Class = @class;
@@ -136,23 +136,23 @@ public struct StunMessageHeader
     /// Parses a byte array in Big Endian format and returns a <see cref="ValueTuple{StunClass, StunMethod}"/>.
     /// </summary>
     /// <param name="buffer">The byte array to parse in Big Endian format.</param>
-    /// <returns>A tuple containing <see cref="StunClass"/> and <see cref="StunMethod"/>.</returns>
+    /// <returns>A tuple containing <see cref="EStunClass"/> and <see cref="EStunMethod"/>.</returns>
     /// <exception cref="InvalidDataException">Thrown when invalid data is encountered.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ValueTuple<StunClass, StunMethod> GetMessageType(ReadOnlySpan<byte> buffer)
+    public static ValueTuple<EStunClass, EStunMethod> GetMessageType(ReadOnlySpan<byte> buffer)
     {
         var @class = (buffer[0] & 0b1111) switch
         {
-            0b0000_0000 => StunClass.Request,
-            0b0000_0100 => StunClass.Indication,
-            0b0000_1000 => StunClass.SuccessResponse,
-            0b0000_1100 => StunClass.ErrorResponse,
+            0b0000_0000 => EStunClass.Request,
+            0b0000_0100 => EStunClass.Indication,
+            0b0000_1000 => EStunClass.SuccessResponse,
+            0b0000_1100 => EStunClass.ErrorResponse,
             _ => throw new InvalidDataException("Invalid class specified")
         };
 
         var method = (buffer[1] & 0b1111_1111) switch
         {
-            0b0000_0001 => StunMethod.Binding,
+            0b0000_0001 => EStunMethod.Binding,
             _ => throw new InvalidDataException("Invalid method specified")
         };
 
@@ -199,6 +199,6 @@ public struct StunMessageHeader
         if (buffer.Length != TransactionIdentifier.Size && buffer.Length != TransactionIdentifier.Rfc3849Size)
             throw new MalformatteHeaderException("Invalid transaction ID size");
 
-        return new TransactionIdentifier(new Memory<byte>(buffer.ToArray()));
+        return new TransactionIdentifier(buffer.ToArray());
     }
 }

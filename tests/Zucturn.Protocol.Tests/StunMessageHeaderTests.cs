@@ -30,8 +30,8 @@ public class StunMessageHeaderTests
     public void StunMessageHeader_ShouldInitializeHeaderProperties()
     {
         // Arrange
-        const StunClass expectedClass = StunClass.Request;
-        const StunMethod expectedMethod = StunMethod.Binding;
+        const EStunClass expectedClass = EStunClass.Request;
+        const EStunMethod expectedMethod = EStunMethod.Binding;
         const ushort expectedMessageLength = (ushort)5123;
 
         // Act
@@ -51,11 +51,11 @@ public class StunMessageHeaderTests
     {
         // Arrange
         var header = new StunMessageHeader();
-        const StunClass expectedClass = StunClass.Request;
-        const StunMethod expectedMethod = StunMethod.Binding;
+        const EStunClass expectedClass = EStunClass.Request;
+        const EStunMethod expectedMethod = EStunMethod.Binding;
         const ushort expectedMessageLength = 1234;
         const int expectedMagicCookie = StunMessageHeader.MagicCookieValue;
-        var expectedTransactionId = TransactionIdentifier.NewIdentifier();
+        var expectedTransactionId = new TransactionIdentifier();
 
         // Act
         header.Class = expectedClass;
@@ -78,8 +78,8 @@ public class StunMessageHeaderTests
         // Arrange
         var header = new StunMessageHeader
         {
-            Class = StunClass.Request,
-            Method = StunMethod.Binding,
+            Class = EStunClass.Request,
+            Method = EStunMethod.Binding,
             MessageLength = 5123,
             MagicCookie = 0x2112A442,
             TransactionId = new TransactionIdentifier(new byte[]
@@ -97,8 +97,8 @@ public class StunMessageHeaderTests
         byteArray.Length.Should().Be(StunMessageHeader.MessageHeaderByteSize);
 
         // Verify the byte order of fields.
-        byteArray[0].Should().Be((byte)StunClass.Request);
-        byteArray[1].Should().Be((byte)StunMethod.Binding);
+        byteArray[0].Should().Be((byte)EStunClass.Request);
+        byteArray[1].Should().Be((byte)EStunMethod.Binding);
 
         //MessageLength
         byteArray[2].Should().Be(0x14);
@@ -120,8 +120,8 @@ public class StunMessageHeaderTests
         // Arrange
         var header = new StunMessageHeader
         {
-            Class = StunClass.Request,
-            Method = StunMethod.Binding,
+            Class = EStunClass.Request,
+            Method = EStunMethod.Binding,
             MessageLength = 5123,
             TransactionId = new TransactionIdentifier(new byte[]
             {
@@ -139,8 +139,8 @@ public class StunMessageHeaderTests
         byteArray.Length.Should().Be(StunMessageHeader.MessageHeaderByteSize);
 
         // Verify the byte order of fields for the old RFC scenario.
-        byteArray[0].Should().Be((byte)StunClass.Request);
-        byteArray[1].Should().Be((byte)StunMethod.Binding);
+        byteArray[0].Should().Be((byte)EStunClass.Request);
+        byteArray[1].Should().Be((byte)EStunMethod.Binding);
 
         // MessageLength
         byteArray[2].Should().Be(0x14);
@@ -203,8 +203,8 @@ public class StunMessageHeaderTests
         var header = StunMessageHeader.FromByteArray(buffer);
 
         // Assert
-        header.Class.Should().Be(StunClass.Request);
-        header.Method.Should().Be(StunMethod.Binding);
+        header.Class.Should().Be(EStunClass.Request);
+        header.Method.Should().Be(EStunMethod.Binding);
         header.MessageLength.Should().Be(0);
         header.MagicCookie.Should().Be(0);
         header.TransactionId.ToString().Should().Be("0d0e0f100102030405060708090a0b0c");
@@ -221,12 +221,12 @@ public class StunMessageHeaderTests
     }
 
     [Theory]
-    [InlineData(0b0000_0000, 0b0000_0001, StunClass.Request, StunMethod.Binding)]
-    [InlineData(0b0000_0100, 0b0000_0001, StunClass.Indication, StunMethod.Binding)]
-    [InlineData(0b0000_1000, 0b0000_0001, StunClass.SuccessResponse, StunMethod.Binding)]
-    [InlineData(0b0000_1100, 0b0000_0001, StunClass.ErrorResponse, StunMethod.Binding)]
+    [InlineData(0b0000_0000, 0b0000_0001, EStunClass.Request, EStunMethod.Binding)]
+    [InlineData(0b0000_0100, 0b0000_0001, EStunClass.Indication, EStunMethod.Binding)]
+    [InlineData(0b0000_1000, 0b0000_0001, EStunClass.SuccessResponse, EStunMethod.Binding)]
+    [InlineData(0b0000_1100, 0b0000_0001, EStunClass.ErrorResponse, EStunMethod.Binding)]
     public void GetMessageType_ShouldReturnValidClassAndMethod_WhenBufferIsCorrect(
-        byte classBits, byte methodBits, StunClass expectedClass, StunMethod expectedMethod)
+        byte classBits, byte methodBits, EStunClass expectedClass, EStunMethod expectedMethod)
     {
         // Arrange
         var buffer = new byte[2];

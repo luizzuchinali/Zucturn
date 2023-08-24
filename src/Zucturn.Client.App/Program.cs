@@ -11,7 +11,7 @@ internal class Program
         var address = IPEndPoint.Parse("127.0.0.1:3478");
         using var socket = new UdpClient(AddressFamily.InterNetwork);
 
-        var header = new StunMessageHeader(StunClass.Request, StunMethod.Binding, 5123);
+        var header = new StunMessageHeader(EStunClass.Request, EStunMethod.Binding, 5123);
         var message = new StunMessage(header);
         socket.Send(message.ToByteArray(), address);
     }
