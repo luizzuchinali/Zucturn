@@ -10,12 +10,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <SonarQubeSetting Include="sonar.coverage.exclusions">
-            <Value>**/Program.cs</Value>
-        </SonarQubeSetting>
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="Serilog" Version="3.0.1"/>
         <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0"/>
     </ItemGroup>
